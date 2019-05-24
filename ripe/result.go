@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 type answer struct {
@@ -26,11 +27,11 @@ type doc struct {
 
 type lst struct {
 	List struct {
-		Name    string          `json:"name"`
-		Arrs    []answerArr     `json:"arrs"`
-		Ints    []answerInteger `json:"ints"`
-		Lists   []lst           `json:"lsts"`
-		Strings answerStrings   `json:"strs"`
+		Name    string         `json:"name"`
+		Arrs    []answerArr    `json:"arrs"`
+		Ints    answerIntegers `json:"ints"`
+		Lists   []lst          `json:"lsts"`
+		Strings answerStrings  `json:"strs"`
 	} `json:"lst"`
 }
 
@@ -47,11 +48,39 @@ type answerArr struct {
 	} `json:"arr"`
 }
 
-type answerInteger struct {
-	Integer struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	} `json:"int"`
+type answerIntegers map[string][]int
+
+func (ai *answerIntegers) UnmarshalJSON(data []byte) (err error) {
+	// Unmarshall the fake JSON-XML payload
+	var tmp []struct {
+		Integer struct {
+			Name  string `json:"name"`
+			Value string `json:"value"`
+		} `json:"int"`
+	}
+	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder.DisallowUnknownFields()
+	if err = decoder.Decode(&tmp); err != nil {
+		err = fmt.Errorf("can't unmarshall strings list into the tmp struct: %v", err)
+		return
+	}
+	// Simplify it
+	var (
+		exist  bool
+		tmpInt int
+	)
+	*ai = make(map[string][]int, len(tmp))
+	for _, value := range tmp {
+		if _, exist = (*ai)[value.Integer.Name]; !exist {
+			(*ai)[value.Integer.Name] = make([]int, 0, 1)
+		}
+		if tmpInt, err = strconv.Atoi(value.Integer.Value); err != nil {
+			err = fmt.Errorf("can't convert integer str as int: %v", err)
+			return
+		}
+		(*ai)[value.Integer.Name] = append((*ai)[value.Integer.Name], tmpInt)
+	}
+	return
 }
 
 type answerStrings map[string][]string
