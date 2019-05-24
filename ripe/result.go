@@ -26,9 +26,25 @@ type answerResult struct {
 	intermediate types
 */
 type doc struct {
-	Doc struct {
-		Strings answerStrings `json:"strs"`
-	} `json:"doc"`
+	Strings answerStrings `json:"strs"`
+}
+
+func (d *doc) UnmarshalJSON(data []byte) (err error) {
+	type alias doc
+	tmp := struct {
+		Doc struct {
+			*alias
+		} `json:"doc"`
+	}{
+		Doc: struct {
+			*alias
+		}{
+			(*alias)(d),
+		},
+	}
+	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(&tmp)
 }
 
 type lst struct {
