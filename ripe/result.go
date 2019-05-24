@@ -32,13 +32,29 @@ type doc struct {
 }
 
 type lst struct {
-	List struct {
-		Name    string         `json:"name"`
-		Arrs    answerArrs     `json:"arrs"`
-		Ints    answerIntegers `json:"ints"`
-		Lists   []lst          `json:"lsts"`
-		Strings answerStrings  `json:"strs"`
-	} `json:"lst"`
+	Name    string         `json:"name"`
+	Arrs    answerArrs     `json:"arrs"`
+	Ints    answerIntegers `json:"ints"`
+	Lists   []lst          `json:"lsts"`
+	Strings answerStrings  `json:"strs"`
+}
+
+func (l *lst) UnmarshalJSON(data []byte) (err error) {
+	type alias lst
+	tmp := struct {
+		List struct {
+			*alias
+		} `json:"lst"`
+	}{
+		List: struct {
+			*alias
+		}{
+			(*alias)(l),
+		},
+	}
+	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder.DisallowUnknownFields()
+	return decoder.Decode(&tmp)
 }
 
 /*
