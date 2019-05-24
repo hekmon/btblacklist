@@ -7,6 +7,9 @@ import (
 	"strconv"
 )
 
+/*
+	Top level types
+*/
 type answer struct {
 	Result answerResult `json:"result"`
 	Lists  []lst        `json:"lsts"`
@@ -19,6 +22,9 @@ type answerResult struct {
 	Docs     []doc  `json:"docs"`
 }
 
+/*
+	intermediate types
+*/
 type doc struct {
 	Doc struct {
 		Strings answerStrings `json:"strs"`
@@ -28,7 +34,7 @@ type doc struct {
 type lst struct {
 	List struct {
 		Name    string         `json:"name"`
-		Arrs    []answerArr    `json:"arrs"`
+		Arrs    answerArrs     `json:"arrs"`
 		Ints    answerIntegers `json:"ints"`
 		Lists   []lst          `json:"lsts"`
 		Strings answerStrings  `json:"strs"`
@@ -36,16 +42,37 @@ type lst struct {
 }
 
 /*
-	base units
+	lower types
 */
 
-type answerArr struct {
-	Arr struct {
-		Name   string `json:"name"`
-		String struct {
-			Value string `json:"value"`
-		} `json:"str"`
-	} `json:"arr"`
+type answerArrs map[string][]string
+
+func (aa *answerArrs) UnmarshalJSON(data []byte) (err error) {
+	// Unmarshall the fake JSON-XML payload
+	var tmp []struct {
+		Arr struct {
+			Name   string `json:"name"`
+			String struct {
+				Value string `json:"value"`
+			} `json:"str"`
+		} `json:"arr"`
+	}
+	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder.DisallowUnknownFields()
+	if err = decoder.Decode(&tmp); err != nil {
+		err = fmt.Errorf("can't unmarshall strings list into the tmp struct: %v", err)
+		return
+	}
+	// Simplify it
+	var exist bool
+	*aa = make(map[string][]string, len(tmp))
+	for _, value := range tmp {
+		if _, exist = (*aa)[value.Arr.Name]; !exist {
+			(*aa)[value.Arr.Name] = make([]string, 0, 1)
+		}
+		(*aa)[value.Arr.Name] = append((*aa)[value.Arr.Name], value.Arr.String.Value)
+	}
+	return
 }
 
 type answerIntegers map[string][]int
