@@ -10,7 +10,7 @@ import (
 /*
 	Top level types
 */
-type answer struct {
+type result struct {
 	Result answerResult `json:"result"`
 	Lists  []lst        `json:"lsts"`
 }

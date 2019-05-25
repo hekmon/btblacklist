@@ -11,10 +11,22 @@ import (
 
 func main() {
 	ripeController := ripe.New()
-	data, err := ripeController.Search("trident mediaguard")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+
+	searches := []string{
+		"trident media guard",
+		"trident mediaguard",
+		"trident mediguard",
+		"hadopi",
 	}
-	pretty.Print(data)
+
+	for _, search := range searches {
+		fmt.Println(search)
+		data, err := ripeController.Search(search)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		pretty.Print(data)
+		fmt.Println()
+	}
 }
