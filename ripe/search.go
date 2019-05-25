@@ -32,3 +32,25 @@ func (c *Controller) Search(search string) (ranges []Range, err error) {
 	// Extract results
 	return extractRange(payload)
 }
+
+func RemoveDuplicates(rangesSets [][]Range) (uniqRanges []Range) {
+	// count
+	var totalRanges int
+	for _, set := range rangesSets {
+		totalRanges += len(set)
+	}
+	// search
+	uniqRanges = make([]Range, 0, totalRanges)
+	for _, set := range rangesSets {
+	candidate:
+		for _, rangeCandidate := range set {
+			for _, addedRange := range uniqRanges {
+				if rangeCandidate == addedRange {
+					continue candidate
+				}
+			}
+			uniqRanges = append(uniqRanges, rangeCandidate)
+		}
+	}
+	return
+}

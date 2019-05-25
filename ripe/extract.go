@@ -159,7 +159,7 @@ func searchRoutes(payload result, ranges *[]Range) (err error) {
 func lastAddr(n *net.IPNet) (ip net.IP, err error) { // works when the n is a prefix, otherwise...
 	nv4 := n.IP.To4()
 	if nv4 == nil {
-		err = errors.New("does not support IPv6 addresses.")
+		err = errors.New("does not support IPv6 addresses")
 		return
 	}
 	ip = make(net.IP, len(nv4))
