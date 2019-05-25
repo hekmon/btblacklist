@@ -13,6 +13,7 @@ const (
 
 var (
 	baseURL *url.URL
+	client  *http.Client
 )
 
 func init() {
@@ -20,14 +21,5 @@ func init() {
 	if baseURL, err = url.Parse(exampleURL); err != nil {
 		panic(err)
 	}
-}
-
-func New() *Controller {
-	return &Controller{
-		client: cleanhttp.DefaultPooledClient(),
-	}
-}
-
-type Controller struct {
-	client *http.Client
+	client = cleanhttp.DefaultPooledClient()
 }

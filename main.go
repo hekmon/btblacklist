@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kylelemons/godebug/pretty"
-
 	"github.com/hekmon/btblacklist/ripe"
+
+	"github.com/kylelemons/godebug/pretty"
 )
 
 func main() {
-	ripeController := ripe.New()
-
 	searches := []string{
 		"trident media guard",
 		"trident mediaguard",
@@ -23,7 +21,7 @@ func main() {
 
 	for index, search := range searches {
 		fmt.Println("->", search)
-		ranges, err := ripeController.Search(search)
+		ranges, err := ripe.Search(search)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)

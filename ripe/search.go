@@ -2,16 +2,19 @@ package ripe
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
+// Range contains all information about an IP range
 type Range struct {
 	Name  string
 	Range string
 	Route string
 }
 
-func (c *Controller) Search(search string) (ranges []Range, err error) {
+// Search returns a list of ranges based on a search string
+func Search(search string) (ranges []Range, err error) {
 	// Prepare URL
 	searchSplitted := strings.Split(search, " ")
 	url := *baseURL
@@ -19,7 +22,7 @@ func (c *Controller) Search(search string) (ranges []Range, err error) {
 	queryValues.Set("q", "("+strings.Join(searchSplitted, " AND ")+")")
 	url.RawQuery = queryValues.Encode()
 	// Start request
-	resp, err := c.client.Get(url.String())
+	resp, err := client.Get(url.String())
 	if err != nil {
 		return
 	}
@@ -28,11 +31,15 @@ func (c *Controller) Search(search string) (ranges []Range, err error) {
 	var payload result
 	decoder := json.NewDecoder(resp.Body)
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&payload)
+	if err = decoder.Decode(&payload); err != nil {
+		err = fmt.Errorf("can't decode api answer payload: %v", err)
+		return
+	}
 	// Extract results
 	return extractRange(payload)
 }
 
+// RemoveDuplicates return a uniq list of range
 func RemoveDuplicates(rangesSets [][]Range) (uniqRanges []Range) {
 	// count
 	var totalRanges int
