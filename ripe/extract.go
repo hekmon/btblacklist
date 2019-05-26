@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 )
 
 func extractRange(payload result) (ranges []Range, err error) {
@@ -104,8 +105,8 @@ func searchInets(payload result, ranges *[]Range) (err error) {
 		}
 		// Save range
 		*ranges = append(*ranges, Range{
-			Name:  fmt.Sprintf("%s - %s", netname[0], desc[0]),
-			Range: inetnum[0],
+			Name:  fmt.Sprintf("%s (%s)", netname[0], desc[0]),
+			Range: strings.Replace(inetnum[0], " ", "", -1),
 		})
 	}
 	return
@@ -115,7 +116,7 @@ func searchRoutes(payload result, ranges *[]Range) (err error) {
 	var (
 		route, desc []string
 		network     *net.IPNet
-		lastIP      net.IP
+		broadcastIP net.IP
 		ok          bool
 	)
 	for _, doc := range payload.Result.Docs {
@@ -141,7 +142,7 @@ func searchRoutes(payload result, ranges *[]Range) (err error) {
 			err = fmt.Errorf("can't parse route '%s' as network: %v", route[0], err)
 			return
 		}
-		if lastIP, err = lastAddr(network); err != nil {
+		if broadcastIP, err = lastAddr(network); err != nil {
 			err = fmt.Errorf("can't get last address of %s: %v", network, err)
 			return
 		}
@@ -149,7 +150,7 @@ func searchRoutes(payload result, ranges *[]Range) (err error) {
 		*ranges = append(*ranges, Range{
 			Name:  desc[0],
 			Route: route[0],
-			Range: fmt.Sprintf("%s - %s", network.IP, lastIP),
+			Range: fmt.Sprintf("%s-%s", network.IP, broadcastIP),
 		})
 	}
 	return
