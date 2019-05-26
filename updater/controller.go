@@ -64,7 +64,7 @@ type Controller struct {
 	frequency  time.Duration
 	// Global state
 	// Sub states
-	ripe string
+	ripeState string
 	// Sub controllers
 	logger *hllogger.HlLogger
 	// State

@@ -21,4 +21,10 @@ func (c *Controller) updater() {
 
 func (c *Controller) updaterBatch() {
 	c.logger.Debug("[Update] worker: starting a new batch")
+	// Proobing
+	ripeUpdate := c.updateRipe()
+	// Global update
+	if ripeUpdate {
+		// doStuff
+	}
 }
