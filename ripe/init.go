@@ -3,6 +3,7 @@ package ripe
 import (
 	"net/http"
 	"net/url"
+	"time"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
@@ -13,7 +14,6 @@ const (
 
 var (
 	baseURL *url.URL
-	client  *http.Client
 )
 
 func init() {
@@ -21,5 +21,18 @@ func init() {
 	if baseURL, err = url.Parse(exampleURL); err != nil {
 		panic(err)
 	}
-	client = cleanhttp.DefaultPooledClient()
+}
+
+// New will return an initialized and ready to use controller
+func New(timeout time.Duration) (c *Client) {
+	c = &Client{
+		client: cleanhttp.DefaultPooledClient(),
+	}
+	c.client.Timeout = timeout
+	return
+}
+
+// Client holds an http client used by methods to perform searchs
+type Client struct {
+	client *http.Client
 }

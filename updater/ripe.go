@@ -11,7 +11,7 @@ func (c *Controller) updateRipe() (updateGlobal bool) {
 	// Perform each searches
 	results := make([][]ripe.Range, len(c.ripeSearch))
 	for index, search := range c.ripeSearch {
-		ranges, err := ripe.Search(search)
+		ranges, err := c.ripec.Search(search)
 		if err != nil {
 			c.logger.Errorf("[Updater] ripe search: %s: %v", search, err)
 			return

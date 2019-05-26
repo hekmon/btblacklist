@@ -14,7 +14,7 @@ type Range struct {
 }
 
 // Search returns a list of ranges based on a search string
-func Search(search string) (ranges []Range, err error) {
+func (c *Client) Search(search string) (ranges []Range, err error) {
 	// Prepare URL
 	searchSplitted := strings.Split(search, " ")
 	url := *baseURL
@@ -22,7 +22,7 @@ func Search(search string) (ranges []Range, err error) {
 	queryValues.Set("q", "("+strings.Join(searchSplitted, " AND ")+")")
 	url.RawQuery = queryValues.Encode()
 	// Start request
-	resp, err := client.Get(url.String())
+	resp, err := c.client.Get(url.String())
 	if err != nil {
 		return
 	}

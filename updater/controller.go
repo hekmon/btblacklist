@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hekmon/btblacklist/ripe"
 	"github.com/hekmon/hllogger"
 )
 
@@ -26,8 +27,9 @@ type Config struct {
 // Use WaitForFullStop() to be sure they are all stopped.
 func New(ctx context.Context, conf Config) (c *Controller, err error) {
 	// Checks
-	if conf.UpdateFrequency < timeout {
-		err = fmt.Errorf("update frequency can not be lower than %v", timeout)
+	minFreq := timeout * time.Duration(len(conf.RipeSearch))
+	if conf.UpdateFrequency < minFreq {
+		err = fmt.Errorf("update frequency can not be lower than %v", minFreq)
 		return
 	}
 	if conf.Logger == nil {
@@ -40,6 +42,7 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		ripeSearch: conf.RipeSearch,
 		frequency:  conf.UpdateFrequency,
 		// Sub controllers
+		ripec:  ripe.New(timeout),
 		logger: conf.Logger,
 		// State
 		ctx:     ctx,
@@ -66,6 +69,7 @@ type Controller struct {
 	// Sub states
 	ripeState string
 	// Sub controllers
+	ripec  *ripe.Client
 	logger *hllogger.HlLogger
 	// State
 	ctx     context.Context
