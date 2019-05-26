@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hekmon/btblacklist/ripe"
+
 	"github.com/hekmon/hllogger"
 )
 

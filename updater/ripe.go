@@ -38,7 +38,7 @@ func (c *Controller) updateRipe() (updateGlobal bool) {
 	finalString := strings.Join(buff, "\n")
 	// Do we need to update global state ?
 	if finalString != c.ripeState {
-		c.logger.Infof("[Updater] ripe results changed: global state will be updated")
+		c.logger.Infof("[Updater] ripe results changed (%d uniq results): global state will be updated", len(uniq))
 		c.ripeState = finalString
 		updateGlobal = true
 	}
