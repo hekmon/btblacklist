@@ -49,11 +49,11 @@ func (c *Controller) updaterBatch() {
 		c.logger.Errorf("[Updater] Can't copy ripe results to the compressor: %v", err)
 		return
 	}
-	// Finalize
 	if _, err = compressor.Write([]byte("\n")); err != nil {
-		c.logger.Errorf("[Updater] Can't add \\n before EOF: %v", err)
+		c.logger.Errorf("[Updater] Can't add \\n after RIPE results: %v", err)
 		return
 	}
+	// Finalize
 	if err = compressor.Close(); err != nil {
 		c.logger.Errorf("[Updater] Can't flush remaining bytes from the gzip compressor: %v", err)
 		return
