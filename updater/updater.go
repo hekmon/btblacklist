@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/hekmon/cunits"
@@ -31,7 +32,7 @@ func (c *Controller) updaterBatch() {
 	// Probing
 	ripeUpdate := c.updateRipe()
 	// Global update
-	if !ripeUpdate {
+	if len(c.compressedData) != 0 && !ripeUpdate {
 		c.logger.Debug("[Updater] No new data, keeping cache")
 		return
 	}
@@ -43,13 +44,11 @@ func (c *Controller) updaterBatch() {
 		return
 	}
 	// Add the ripe data
-	ripeReader := bytes.NewBufferString(c.ripeState)
-	written, err := io.Copy(compressor, ripeReader)
-	if err != nil {
+	ripeReader := bytes.NewBufferString(strings.Join(c.ripeState, "\n"))
+	if _, err = io.Copy(compressor, ripeReader); err != nil {
 		c.logger.Errorf("[Updater] Can't copy ripe results to the compressor: %v", err)
 		return
 	}
-	c.logger.Debugf("[Updater] Copied %s ripe data to the compressor", cunits.ImportInByte(float64(written)))
 	// Finalize
 	if _, err = compressor.Write([]byte("\n")); err != nil {
 		c.logger.Errorf("[Updater] Can't add \\n before EOF: %v", err)
@@ -63,4 +62,6 @@ func (c *Controller) updaterBatch() {
 	c.compressedDataAccess.Lock()
 	c.compressedData = compressed.Bytes()
 	c.compressedDataAccess.Unlock()
+	c.logger.Infof("[Updater] %d range(s) from RIPE search compressed into %s",
+		len(c.ripeState), cunits.ImportInByte(float64(len(c.compressedData))))
 }

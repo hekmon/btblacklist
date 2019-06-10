@@ -61,6 +61,7 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		c.logger.Warningf("[Updater] can't load previous state from disk: %v", err)
 		err = nil
 	} else {
+		c.ripeState = s.Ripe
 		c.logger.Infof("[Updater] previous state loaded from '%s'", stateFile)
 	}
 	// Start the workers
@@ -84,7 +85,7 @@ type Controller struct {
 	compressedData       []byte
 	compressedDataAccess sync.RWMutex
 	// Sub states
-	ripeState string
+	ripeState []string
 	// Sub controllers
 	ripec  *ripe.Client
 	logger *hllogger.HlLogger
@@ -101,8 +102,7 @@ func (c *Controller) stopWatcher() {
 	c.workers.Wait()
 	// Save some state
 	if err := saveStateToDisk(stateFile, state{
-		Compressed: c.compressedData,
-		Ripe:       c.ripeState,
+		Ripe: c.ripeState,
 	}, c.logger.IsDebugShown()); err != nil {
 		c.logger.Errorf("[Updater] can't save state to disk: %v", err)
 	} else {

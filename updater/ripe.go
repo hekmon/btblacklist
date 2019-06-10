@@ -2,7 +2,7 @@ package updater
 
 import (
 	"fmt"
-	"strings"
+	"reflect"
 
 	"github.com/hekmon/btblacklist/ripe"
 )
@@ -35,11 +35,10 @@ func (c *Controller) updateRipe() (updateGlobal bool) {
 		// Write the line
 		buff[index] = fmt.Sprintf("%s:%s", ripeRange.Name, ripeRange.Range)
 	}
-	finalString := strings.Join(buff, "\n")
 	// Do we need to update global state ?
-	if finalString != c.ripeState {
+	if !reflect.DeepEqual(buff, c.ripeState) {
 		c.logger.Infof("[Updater] ripe results changed (%d uniq results): global state will be updated", len(uniq))
-		c.ripeState = finalString
+		c.ripeState = buff
 		updateGlobal = true
 	}
 	return
