@@ -29,7 +29,7 @@ func (c *Controller) updateRipe() (updateGlobal bool) {
 			if ripeRange.Route == "" {
 				c.logger.Debugf("[Updater] ripe search: got inetnum: %s: %s", ripeRange.Name, ripeRange.Range)
 			} else {
-				c.logger.Debugf("[Updater] ripe search: got inetnum: %s: %s (from %s)", ripeRange.Name, ripeRange.Range, ripeRange.Route)
+				c.logger.Debugf("[Updater] ripe search: got route: %s: %s (from %s)", ripeRange.Name, ripeRange.Range, ripeRange.Route)
 			}
 		}
 		// Write the line
