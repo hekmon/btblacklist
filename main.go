@@ -5,7 +5,6 @@ import (
 	"flag"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/hekmon/btblacklist/updater"
 	"github.com/hekmon/hllogger"
@@ -53,7 +52,7 @@ func main() {
 
 	// Conf
 	logger.Info("[Main] Loading configuration")
-	_, err := getConfig(*confFile)
+	conf, err := getConfig(*confFile)
 	if err != nil {
 		logger.Fatalf(1, "can't load config: %v", err)
 	}
@@ -64,8 +63,8 @@ func main() {
 
 	// Start the updater
 	updaterController, err = updater.New(mainCtx, updater.Config{
-		UpdateFrequency: 24 * time.Hour,
-		RipeSearch:      searches,
+		UpdateFrequency: conf.UpdateFrequency,
+		RipeSearch:      conf.RipeSearch,
 		Logger:          logger,
 	})
 	if err != nil {
