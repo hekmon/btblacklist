@@ -15,7 +15,7 @@ import (
 
 const (
 	timeout   = time.Minute
-	stateFile = "state.json"
+	cacheFile = "cache.json"
 )
 
 // Config allows to customize a Controller creation with New()
@@ -52,8 +52,8 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		stopped: make(chan struct{}),
 	}
 	// Load state
-	var s state
-	if err = loadStateFromDisk(stateFile, &s); err != nil {
+	var tmp cache
+	if err = loadCacheFromDisk(cacheFile, &tmp); err != nil {
 		if !strings.HasSuffix(err.Error(), "no such file or directory") {
 			err = fmt.Errorf("can't load previous searchs data from disk: %v", err)
 			return
@@ -61,8 +61,9 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		c.logger.Warningf("[Updater] can't load previous state from disk: %v", err)
 		err = nil
 	} else {
-		c.ripeState = s.Ripe
-		c.logger.Infof("[Updater] previous state loaded from '%s'", stateFile)
+		c.ripeState = tmp.Ripe
+		c.compressedData = tmp.Compressed
+		c.logger.Infof("[Updater] previous state loaded from '%s'", cacheFile)
 	}
 	// Start the workers
 	c.workers.Add(1)
@@ -100,13 +101,14 @@ func (c *Controller) stopWatcher() {
 	c.logger.Debug("[Updater] Stop signal received")
 	// Wait for workers to end
 	c.workers.Wait()
-	// Save some state
-	if err := saveStateToDisk(stateFile, state{
-		Ripe: c.ripeState,
+	// Save some states
+	if err := saveCacheToDisk(cacheFile, cache{
+		Compressed: c.compressedData,
+		Ripe:       c.ripeState,
 	}, c.logger.IsDebugShown()); err != nil {
 		c.logger.Errorf("[Updater] can't save state to disk: %v", err)
 	} else {
-		c.logger.Infof("[Updater] State dumped to %s", stateFile)
+		c.logger.Infof("[Updater] State dumped to %s", cacheFile)
 	}
 	// We have fully stopped release WaitForFullStop()
 	c.logger.Debug("[Updater] Fully stopped")

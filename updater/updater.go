@@ -32,7 +32,7 @@ func (c *Controller) updaterBatch() {
 	// Probing
 	ripeUpdate := c.updateRipe()
 	// Global update
-	if len(c.compressedData) != 0 && !ripeUpdate {
+	if !ripeUpdate {
 		c.logger.Debug("[Updater] No new data, keeping cache")
 		return
 	}
@@ -62,6 +62,6 @@ func (c *Controller) updaterBatch() {
 	c.compressedDataAccess.Lock()
 	c.compressedData = compressed.Bytes()
 	c.compressedDataAccess.Unlock()
-	c.logger.Infof("[Updater] %d range(s) from RIPE search compressed into %s",
+	c.logger.Infof("[Updater] %d range(s) from RIPE search compressed as %s",
 		len(c.ripeState), cunits.ImportInByte(float64(len(c.compressedData))))
 }
