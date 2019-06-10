@@ -50,7 +50,7 @@ func main() {
 	})
 	logger.Output(" ")
 	logger.Output(" • BT Blacklist •")
-	logger.Output("      (￣ヘ￣)")
+	logger.Output("     (￣ヘ￣)")
 	logger.Output(" ")
 
 	// Conf
