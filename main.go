@@ -79,9 +79,11 @@ func main() {
 	go handleSignals()
 
 	// Start the http server
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", wrapHandlerWithLogging(handler))
+	bind := fmt.Sprintf("%s:%d", conf.Bind, conf.Port)
+	logger.Infof("[Main] Starting HTTP server on %s", bind)
 	httpServer = &http.Server{
-		Addr: fmt.Sprintf("%s:%d", conf.Bind, conf.Port),
+		Addr: bind,
 		// Handler: nil,
 	}
 	go httpServer.ListenAndServe()

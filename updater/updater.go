@@ -62,6 +62,6 @@ func (c *Controller) updaterBatch() {
 	c.compressedDataAccess.Lock()
 	c.compressedData = compressed.Bytes()
 	c.compressedDataAccess.Unlock()
-	c.logger.Infof("[Updater] %d range(s) from RIPE search compressed as %s",
+	c.logger.Infof("[Updater] %d range(s) from RIPE search compressed to %s",
 		len(c.ripeState), cunits.ImportInByte(float64(len(c.compressedData))))
 }
