@@ -67,6 +67,8 @@ type Controller struct {
 	ripeSearch []string
 	frequency  time.Duration
 	// Global state
+	compressedData       []byte
+	compressedDataAccess sync.RWMutex
 	// Sub states
 	ripeState string
 	// Sub controllers
