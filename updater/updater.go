@@ -50,6 +50,15 @@ func (c *Controller) updaterBatch() {
 		return
 	}
 	c.logger.Debugf("[Updater] Copied %s ripe data to the compressor", cunits.ImportInByte(float64(written)))
+	// Finalize
+	if _, err = compressor.Write([]byte("\n")); err != nil {
+		c.logger.Errorf("[Updater] Can't add \\n before EOF: %v", err)
+		return
+	}
+	if err = compressor.Close(); err != nil {
+		c.logger.Errorf("[Updater] Can't flush remaining bytes from the gzip compressor: %v", err)
+		return
+	}
 	// Update the current data
 	c.compressedDataAccess.Lock()
 	c.compressedData = compressed.Bytes()
