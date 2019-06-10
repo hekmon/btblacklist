@@ -16,4 +16,5 @@
 
 # Dev
 btblacklist
-tmp.json
+ripe/tmp.json
+state.json

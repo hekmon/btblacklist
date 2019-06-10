@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"net/http"
 	"os"
 	"sync"
 
@@ -16,6 +18,7 @@ var (
 	mainCtx           context.Context
 	mainCtxCancel     func()
 	updaterController *updater.Controller
+	httpServer        *http.Server
 	mainStop          sync.Mutex
 )
 
@@ -74,6 +77,14 @@ func main() {
 	// Handles signals
 	mainStop.Lock()
 	go handleSignals()
+
+	// Start the http server
+	http.HandleFunc("/", handler)
+	httpServer = &http.Server{
+		Addr: fmt.Sprintf("%s:%d", conf.Bind, conf.Port),
+		// Handler: nil,
+	}
+	go httpServer.ListenAndServe()
 
 	// Finally ready
 	if err = systemd.NotifyReady(); err != nil {
