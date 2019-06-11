@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 )
@@ -11,13 +12,15 @@ type config struct {
 	Bind            string `json:"bind_address"`
 	Port            uint16 `json:"bind_port"`
 	UpdateFrequency time.Duration
-	RipeSearch      []string `json:"ripe_search"`
+	RipeSearch      []string            `json:"ripe_search"`
+	Blocklists      map[string]*url.URL `json:"external_blocklists"`
 }
 
 func (c *config) UnmarshalJSON(data []byte) (err error) {
 	type shadow config
 	tmp := struct {
-		UpdateFrequency uint `json:"update_frequency_hours"`
+		UpdateFrequency uint              `json:"update_frequency_hours"`
+		Blocklists      map[string]string `json:"external_blocklists"`
 		*shadow
 	}{
 		shadow: (*shadow)(c),
@@ -26,6 +29,14 @@ func (c *config) UnmarshalJSON(data []byte) (err error) {
 		return
 	}
 	c.UpdateFrequency = time.Duration(tmp.UpdateFrequency) * time.Hour
+	c.Blocklists = make(map[string]*url.URL, len(tmp.Blocklists))
+	var tmpURL *url.URL
+	for name, strURL := range tmp.Blocklists {
+		if tmpURL, err = url.Parse(strURL); err != nil {
+			return fmt.Errorf("can't parse '%s' external blocklist as URL: %v", name, err)
+		}
+		c.Blocklists[name] = tmpURL
+	}
 	return
 }
 

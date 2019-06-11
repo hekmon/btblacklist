@@ -8,8 +8,9 @@ import (
 )
 
 type cache struct {
-	Compressed []byte   `json:"compressed"`
-	Ripe       []string `json:"ripe"`
+	Compressed []byte              `json:"compressed"`
+	Ripe       []string            `json:"ripe"`
+	External   map[string][]string `json:"external"`
 }
 
 func (s *cache) MarshalJSON() (data []byte, err error) {

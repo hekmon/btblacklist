@@ -68,6 +68,7 @@ func main() {
 	updaterController, err = updater.New(mainCtx, updater.Config{
 		UpdateFrequency: conf.UpdateFrequency,
 		RipeSearch:      conf.RipeSearch,
+		Blocklists:      conf.Blocklists,
 		Logger:          logger,
 	})
 	if err != nil {

@@ -4,12 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/hekmon/btblacklist/ripe"
 
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	"github.com/hekmon/hllogger"
 )
 
@@ -22,6 +25,7 @@ const (
 type Config struct {
 	UpdateFrequency time.Duration
 	RipeSearch      []string
+	Blocklists      map[string]*url.URL
 	Logger          *hllogger.HlLogger
 }
 
@@ -43,9 +47,13 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 	c = &Controller{
 		// Config
 		ripeSearch: conf.RipeSearch,
+		blocklists: conf.Blocklists,
 		frequency:  conf.UpdateFrequency,
+		// Blocklists
+		externalStates: make(map[string][]string, len(conf.Blocklists)),
 		// Sub controllers
 		ripec:  ripe.New(timeout),
+		http:   cleanhttp.DefaultPooledClient(),
 		logger: conf.Logger,
 		// State
 		ctx:     ctx,
@@ -63,6 +71,14 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 	} else {
 		c.ripeState = tmp.Ripe
 		c.compressedData = tmp.Compressed
+		for name, lines := range tmp.External {
+			for search := range conf.Blocklists {
+				if name == search {
+					c.externalStates[name] = lines
+					break
+				}
+			}
+		}
 		c.logger.Infof("[Updater] previous state loaded from '%s'", cacheFile)
 	}
 	// Start the workers
@@ -81,14 +97,17 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 type Controller struct {
 	// Config
 	ripeSearch []string
+	blocklists map[string]*url.URL
 	frequency  time.Duration
 	// Global state
 	compressedData       []byte
 	compressedDataAccess sync.RWMutex
 	// Sub states
-	ripeState []string
+	ripeState      []string
+	externalStates map[string][]string
 	// Sub controllers
 	ripec  *ripe.Client
+	http   *http.Client
 	logger *hllogger.HlLogger
 	// State
 	ctx     context.Context
@@ -105,6 +124,7 @@ func (c *Controller) stopWatcher() {
 	if err := saveCacheToDisk(cacheFile, cache{
 		Compressed: c.compressedData,
 		Ripe:       c.ripeState,
+		External:   c.externalStates,
 	}, c.logger.IsDebugShown()); err != nil {
 		c.logger.Errorf("[Updater] can't save state to disk: %v", err)
 	} else {
