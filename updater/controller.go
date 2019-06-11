@@ -122,7 +122,7 @@ func (c *Controller) stopWatcher() {
 	// Wait for workers to end
 	c.workers.Wait()
 	// Save some states
-	c.logger.Infof("[Updater] Dumping cache to %s", cacheFile)
+	c.logger.Infof("[Updater] Dumping cache to '%s'", cacheFile)
 	if err := saveCacheToDisk(cache{
 		Ripe:     c.ripeState,
 		External: c.externalStates,

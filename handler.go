@@ -38,7 +38,8 @@ func handler(w *loggingResponseWriter, r *http.Request) {
 		return
 	}
 	// We do !
-	w.Header().Add("Content-Type", "application/x-gzip")
+	w.Header().Set("Content-Type", "application/x-gzip")
+	w.Header().Set("Content-Disposition", "attachment; filename=btblocklist.txt.gz;")
 	written, err := io.Copy(w, reader)
 	size = cunits.ImportInByte(float64(written))
 }
