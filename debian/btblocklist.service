@@ -1,0 +1,13 @@
+[Unit]
+Description=btblocklist
+After=network-online.target
+
+[Service]
+Type=notify
+User=btblocklist
+EnvironmentFile=/etc/default/btblocklist
+ExecStart=/usr/bin/btblocklist -conf $CONFIG -loglevel $LOGLEVEL
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

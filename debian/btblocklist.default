@@ -1,0 +1,3 @@
+# btblocklist default configuration
+CONFIG=/etc/btblocklist/config.json
+LOGLEVEL=1

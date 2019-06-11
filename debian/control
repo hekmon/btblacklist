@@ -1,0 +1,11 @@
+Source: btblocklist
+Maintainer: Hekmon <edouardhur@gmail.com>
+Build-Depends: debhelper (>= 9),
+               dh-systemd,
+
+Package: btblocklist
+Architecture: amd64
+Pre-Depends: dpkg (>= 1.16.1)
+Depends: adduser
+Homepage: https://github.com/hekmon/btblocklist
+Description: Build a single blocklist from RIPE API search and several external sources

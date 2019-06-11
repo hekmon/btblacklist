@@ -19,3 +19,13 @@ btblocklist
 ripe/tmp.json
 cache.json
 cache.gob.gz
+
+# Debian package
+btblocklist
+config.json
+debian/files
+debian/btblocklist/
+debian/btblocklist.substvars
+debian/btblocklist.debhelper.log
+debian/btblocklist.*.debhelper
+debian/debhelper-build-stamp
