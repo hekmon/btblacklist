@@ -40,7 +40,7 @@ func (c *Controller) getExternalBlockList(name, url string) (modified bool) {
 	lines := strings.Split(string(data), "\n")
 	c.logger.Debugf("[Updater] external blocklist '%s': got %d line(s)", name, len(lines))
 	if !reflect.DeepEqual(lines, c.externalStates[name]) {
-		c.logger.Infof("[Updater] external blocklist '%s': data has changed, will update", name)
+		c.logger.Infof("[Updater] external blocklist '%s': data has changed: global state will be updated", name)
 		c.externalStates[name] = lines
 		modified = true
 	} else {

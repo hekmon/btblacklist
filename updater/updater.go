@@ -42,6 +42,7 @@ func (c *Controller) updaterBatch() {
 		c.logger.Debug("[Updater] No new data, keeping cache")
 		return
 	}
+	c.logger.Debug("[Updater] Merging and compressing all results")
 	// Prepare the compressor
 	compressed := bytes.NewBuffer(nil)
 	compressor, err := gzip.NewWriterLevel(compressed, gzip.BestCompression)
@@ -60,7 +61,9 @@ func (c *Controller) updaterBatch() {
 		return
 	}
 	// Add the external data
+	var externalLines int
 	for name, lines := range c.externalStates {
+		externalLines += len(lines)
 		externalReader := bytes.NewBufferString(strings.Join(lines, "\n"))
 		if _, err = io.Copy(compressor, externalReader); err != nil {
 			c.logger.Errorf("[Updater] Can't copy '%s' results to the compressor: %v", name, err)
@@ -80,11 +83,6 @@ func (c *Controller) updaterBatch() {
 	c.compressedDataAccess.Lock()
 	c.compressedData = compressed.Bytes()
 	c.compressedDataAccess.Unlock()
-	// Update the logs
-	var externalLines int
-	for _, lines := range c.externalStates {
-		externalLines += len(lines)
-	}
 	c.logger.Infof("[Updater] %d range(s) from RIPE search and %d line(s) from %d external blocklist(s) compressed to %s",
 		len(c.ripeState), externalLines, len(c.externalStates), cunits.ImportInByte(float64(len(c.compressedData))))
 }

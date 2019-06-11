@@ -3,6 +3,7 @@ package updater
 import (
 	"fmt"
 	"reflect"
+	"sort"
 
 	"github.com/hekmon/btblacklist/ripe"
 )
@@ -19,10 +20,9 @@ func (c *Controller) updateRipe() (updateGlobal bool) {
 		results[index] = ranges
 		c.logger.Debugf("[Updater] ripe search: %s: %d result(s)", search, len(ranges))
 	}
-	// Merge results
+	// Merge & sort results
 	uniq := ripe.RemoveDuplicates(results)
-	// Create the final string
-	buff := make([]string, len(uniq))
+	list := make([]string, len(uniq))
 	for index, ripeRange := range uniq {
 		// Debug can be nice
 		if c.logger.IsDebugShown() {
@@ -32,14 +32,17 @@ func (c *Controller) updateRipe() (updateGlobal bool) {
 				c.logger.Debugf("[Updater] ripe search: got route: %s: %s (from %s)", ripeRange.Name, ripeRange.Range, ripeRange.Route)
 			}
 		}
-		// Write the line
-		buff[index] = fmt.Sprintf("%s:%s", ripeRange.Name, ripeRange.Range)
+		// Build P2B lines
+		list[index] = fmt.Sprintf("%s:%s", ripeRange.Name, ripeRange.Range)
 	}
+	sort.Strings(list)
 	// Do we need to update global state ?
-	if !reflect.DeepEqual(buff, c.ripeState) {
+	if !reflect.DeepEqual(list, c.ripeState) {
 		c.logger.Infof("[Updater] ripe results changed (%d uniq results): global state will be updated", len(uniq))
-		c.ripeState = buff
+		c.ripeState = list
 		updateGlobal = true
+	} else {
+		c.logger.Debug("[Updater] ripe results identical: keeping cache")
 	}
 	return
 }
