@@ -64,6 +64,10 @@ func (c *Controller) compileFinalDataBlobFromCache() (data []byte) {
 		return
 	}
 	// Add the ripe data
+	if _, err = compressor.Write([]byte("# BTBlocklist RIPE search\n")); err != nil {
+		c.logger.Errorf("[Updater] Can't write RIPE search header: %v", err)
+		return
+	}
 	ripeReader := bytes.NewBufferString(strings.Join(c.ripeState, "\n"))
 	if _, err = io.Copy(compressor, ripeReader); err != nil {
 		c.logger.Errorf("[Updater] Can't copy ripe results to the compressor: %v", err)

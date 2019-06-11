@@ -68,6 +68,7 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		c.logger.Warningf("[Updater] can't load previous state from disk: %v", err)
 		err = nil
 	} else {
+		c.logger.Infof("[Updater] loading previous state from '%s'", cacheFile)
 		// Get sub caches
 		c.ripeState = tmp.Ripe
 		for name, lines := range tmp.External {
@@ -80,7 +81,6 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		}
 		// Recompute global cache from sub cache
 		c.compressedData = c.compileFinalDataBlobFromCache()
-		c.logger.Infof("[Updater] previous state loaded from '%s'", cacheFile)
 	}
 	// Start the workers
 	c.workers.Add(1)

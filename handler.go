@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"net/http"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -32,14 +33,15 @@ func handler(w *loggingResponseWriter, r *http.Request) {
 		}
 	}()
 	// Do we have any data to stream ?
-	reader := updaterController.GetGzippedDataReader()
-	if reader == nil {
+	reader, length := updaterController.GetGzippedDataReader()
+	if length == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	// We do !
-	w.Header().Set("Content-Type", "application/x-gzip")
 	w.Header().Set("Content-Disposition", "attachment; filename=btblocklist.txt.gz;")
+	w.Header().Set("Content-Length", strconv.Itoa(length))
+	w.Header().Set("Content-Type", "application/x-gzip")
 	written, err := io.Copy(w, reader)
 	size = cunits.ImportInByte(float64(written))
 }
