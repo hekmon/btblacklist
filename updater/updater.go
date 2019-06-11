@@ -39,10 +39,11 @@ func (c *Controller) updaterBatch() {
 	}
 	// Global update
 	if !ripeUpdate && !externalUpdate {
-		c.logger.Debug("[Updater] No new data, keeping cache")
+		c.logger.Info("[Updater] No new data, keeping cache")
 		return
 	}
-	c.logger.Debug("[Updater] Merging and compressing all results")
+	c.logger.Info("[Updater] Merging and compressing all results")
+	startCompress := time.Now()
 	// Prepare the compressor
 	compressed := bytes.NewBuffer(nil)
 	compressor, err := gzip.NewWriterLevel(compressed, gzip.BestCompression)
@@ -83,6 +84,6 @@ func (c *Controller) updaterBatch() {
 	c.compressedDataAccess.Lock()
 	c.compressedData = compressed.Bytes()
 	c.compressedDataAccess.Unlock()
-	c.logger.Infof("[Updater] %d range(s) from RIPE search and %d line(s) from %d external blocklist(s) compressed to %s",
-		len(c.ripeState), externalLines, len(c.externalStates), cunits.ImportInByte(float64(len(c.compressedData))))
+	c.logger.Infof("[Updater] %d range(s) from RIPE search and %d line(s) from %d external blocklist(s) compressed to %s in %v",
+		len(c.ripeState), externalLines, len(c.externalStates), cunits.ImportInByte(float64(len(c.compressedData))), time.Since(startCompress))
 }

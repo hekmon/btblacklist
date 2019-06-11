@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	timeout   = time.Minute
-	cacheFile = "cache.json"
+	timeout = time.Minute
 )
 
 // Config allows to customize a Controller creation with New()
@@ -61,7 +60,7 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 	}
 	// Load state
 	var tmp cache
-	if err = loadCacheFromDisk(cacheFile, &tmp); err != nil {
+	if err = loadCacheFromDisk(&tmp); err != nil {
 		if !strings.HasSuffix(err.Error(), "no such file or directory") {
 			err = fmt.Errorf("can't load previous searchs data from disk: %v", err)
 			return
@@ -121,14 +120,13 @@ func (c *Controller) stopWatcher() {
 	// Wait for workers to end
 	c.workers.Wait()
 	// Save some states
-	if err := saveCacheToDisk(cacheFile, cache{
+	c.logger.Infof("[Updater] Dumping cache to %s", cacheFile)
+	if err := saveCacheToDisk(cache{
 		Compressed: c.compressedData,
 		Ripe:       c.ripeState,
 		External:   c.externalStates,
 	}, c.logger.IsDebugShown()); err != nil {
 		c.logger.Errorf("[Updater] can't save state to disk: %v", err)
-	} else {
-		c.logger.Infof("[Updater] State dumped to %s", cacheFile)
 	}
 	// We have fully stopped release WaitForFullStop()
 	c.logger.Debug("[Updater] Fully stopped")

@@ -1,10 +1,14 @@
 package updater
 
 import (
-	"encoding/base64"
-	"encoding/json"
+	"compress/gzip"
+	"encoding/gob"
 	"fmt"
 	"os"
+)
+
+const (
+	cacheFile = "cache.gob.gz"
 )
 
 type cache struct {
@@ -13,65 +17,74 @@ type cache struct {
 	External   map[string][]string `json:"external"`
 }
 
-func (s *cache) MarshalJSON() (data []byte, err error) {
-	// Prepare the shadow data structure for custom marshalling
-	type shadow cache
-	tmp := struct {
-		Compressed string `json:"compressed"`
-		*shadow
-	}{
-		shadow: (*shadow)(s),
-	}
-	// Encode gzip data to b64 before JSON marshalling
-	tmp.Compressed = base64.StdEncoding.EncodeToString(s.Compressed)
-	// Serialize !
-	return json.Marshal(tmp)
-}
-
-func (s *cache) UnmarshalJSON(data []byte) (err error) {
-	// Prepare the shadow data structure for custom marshalling
-	type shadow cache
-	tmp := struct {
-		Compressed string `json:"compressed"`
-		*shadow
-	}{
-		shadow: (*shadow)(s),
-	}
-	// Unmarshal to the tmp struct
-	if err = json.Unmarshal(data, &tmp); err != nil {
-		return fmt.Errorf("can't unmarshal data to the shadow struct: %v", err)
-	}
-	// Deserialize the tmp data
-	if s.Compressed, err = base64.StdEncoding.DecodeString(tmp.Compressed); err != nil {
-		return fmt.Errorf("can't deserialized compressed data as base64: %v", err)
-	}
-	return
-}
-
-func loadCacheFromDisk(path string, data interface{}) (err error) {
-	file, err := os.Open(path)
+func loadCacheFromDisk(data interface{}) (err error) {
+	// File
+	file, err := os.Open(cacheFile)
 	if err != nil {
-		err = fmt.Errorf("can't open '%s' for reading: %v", path, err)
+		err = fmt.Errorf("can't open '%s' for reading: %v", cacheFile, err)
 		return
 	}
-	if err = json.NewDecoder(file).Decode(data); err != nil {
-		err = fmt.Errorf("JSON decoder failed: %v", err)
-	}
-	return file.Close()
-}
-
-func saveCacheToDisk(path string, data interface{}, indent bool) (err error) {
-	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0640)
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			if err == nil {
+				err = closeErr
+			} else {
+				err = fmt.Errorf("%s | %s", err, closeErr)
+			}
+		}
+	}()
+	// Gzip decompress
+	decompressor, err := gzip.NewReader(file)
 	if err != nil {
-		err = fmt.Errorf("can't open '%s' for writing: %v", path, err)
+		err = fmt.Errorf("can't create the gzip decompressor: %v", err)
 		return
 	}
-	encoder := json.NewEncoder(file)
-	if indent {
-		encoder.SetIndent("", "    ")
+	defer func() {
+		if closeErr := decompressor.Close(); closeErr != nil {
+			if err == nil {
+				err = closeErr
+			} else {
+				err = fmt.Errorf("%s | %s", err, closeErr)
+			}
+		}
+	}()
+	// Deserialize
+	decoder := gob.NewDecoder(decompressor)
+	return decoder.Decode(data)
+}
+
+func saveCacheToDisk(data interface{}, indent bool) (err error) {
+	// File
+	file, err := os.OpenFile(cacheFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0640)
+	if err != nil {
+		err = fmt.Errorf("can't open '%s' for writing: %v", cacheFile, err)
+		return
 	}
-	if err = encoder.Encode(data); err != nil {
-		err = fmt.Errorf("JSON encoder failed: %v", err)
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			if err == nil {
+				err = closeErr
+			} else {
+				err = fmt.Errorf("%s | %s", err, closeErr)
+			}
+		}
+	}()
+	// Compressor
+	compressor, err := gzip.NewWriterLevel(file, gzip.BestCompression)
+	if err != nil {
+		err = fmt.Errorf("can't create the gzip decompressor: %v", err)
+		return
 	}
-	return file.Close()
+	defer func() {
+		if closeErr := compressor.Close(); closeErr != nil {
+			if err == nil {
+				err = closeErr
+			} else {
+				err = fmt.Errorf("%s | %s", err, closeErr)
+			}
+		}
+	}()
+	// Serialize
+	encoder := gob.NewEncoder(compressor)
+	return encoder.Encode(data)
 }
