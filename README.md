@@ -1,2 +1,2 @@
-# btblacklist
-Scrape, merge and serve blacklist for bittorrent clients over HTTP
+# BT Blocklist
+Scrape, merge and serve blocklist for bittorrent clients over HTTP

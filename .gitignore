@@ -15,7 +15,7 @@
 .vscode/
 
 # Dev
-btblacklist
+btblocklist
 ripe/tmp.json
 cache.json
 cache.gob.gz

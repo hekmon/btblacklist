@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/hekmon/btblacklist/updater"
+	"github.com/hekmon/btblocklist/updater"
 	"github.com/hekmon/hllogger"
 	systemd "github.com/iguanesolutions/go-systemd"
 )
@@ -49,7 +49,7 @@ func main() {
 		SystemdJournaldCompat: systemd.IsNotifyEnabled(),
 	})
 	logger.Output(" ")
-	logger.Output(" • BT Blacklist •")
+	logger.Output(" • BT Blocklist •")
 	logger.Output("     (￣ヘ￣)")
 	logger.Output(" ")
 

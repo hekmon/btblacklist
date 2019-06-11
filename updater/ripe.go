@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/hekmon/btblacklist/ripe"
+	"github.com/hekmon/btblocklist/ripe"
 )
 
 func (c *Controller) updateRipe() (updateGlobal bool) {

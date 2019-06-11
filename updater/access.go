@@ -2,7 +2,7 @@ package updater
 
 import "bytes"
 
-// GetGzippedDataReader returns a reader yielding gzipped blacklist
+// GetGzippedDataReader returns a reader yielding gzipped blocklist
 func (c *Controller) GetGzippedDataReader() (gzipReader *bytes.Reader, length int) {
 	defer c.compressedDataAccess.RUnlock()
 	c.compressedDataAccess.RLock()

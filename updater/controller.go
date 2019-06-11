@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hekmon/btblacklist/ripe"
+	"github.com/hekmon/btblocklist/ripe"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	"github.com/hekmon/hllogger"
