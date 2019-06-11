@@ -31,8 +31,14 @@ func handler(w *loggingResponseWriter, r *http.Request) {
 				reqID, r.Method, r.URL, r.RemoteAddr, w.statusCode, http.StatusText(w.statusCode), time.Since(start), size)
 		}
 	}()
-	// Stream data
+	// Do we have any data to stream ?
+	reader := updaterController.GetGzippedDataReader()
+	if reader == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	// We do !
 	w.Header().Add("Content-Type", "application/x-gzip")
-	written, err := io.Copy(w, updaterController.GetGzippedDataReader())
+	written, err := io.Copy(w, reader)
 	size = cunits.ImportInByte(float64(written))
 }

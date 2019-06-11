@@ -42,8 +42,20 @@ func (c *Controller) updaterBatch() {
 		c.logger.Info("[Updater] No new data, keeping cache")
 		return
 	}
-	c.logger.Info("[Updater] Merging and compressing all results")
+	data := c.compileFinalDataBlobFromCache()
+	if data == nil {
+		return
+	}
+	// Update the current data
+	c.compressedDataAccess.Lock()
+	c.compressedData = data
+	c.compressedDataAccess.Unlock()
+	c.logger.Debug("[Updater] global cache updated")
+}
+
+func (c *Controller) compileFinalDataBlobFromCache() (data []byte) {
 	startCompress := time.Now()
+	c.logger.Info("[Updater] Merging and compressing all cached results")
 	// Prepare the compressor
 	compressed := bytes.NewBuffer(nil)
 	compressor, err := gzip.NewWriterLevel(compressed, gzip.BestCompression)
@@ -80,10 +92,8 @@ func (c *Controller) updaterBatch() {
 		c.logger.Errorf("[Updater] Can't flush remaining bytes from the gzip compressor: %v", err)
 		return
 	}
-	// Update the current data
-	c.compressedDataAccess.Lock()
-	c.compressedData = compressed.Bytes()
-	c.compressedDataAccess.Unlock()
+	data = compressed.Bytes()
 	c.logger.Infof("[Updater] %d range(s) from RIPE search and %d line(s) from %d external blocklist(s) compressed to %s in %v",
-		len(c.ripeState), externalLines, len(c.externalStates), cunits.ImportInByte(float64(len(c.compressedData))), time.Since(startCompress))
+		len(c.ripeState), externalLines, len(c.externalStates), cunits.ImportInByte(float64(len(data))), time.Since(startCompress))
+	return
 }

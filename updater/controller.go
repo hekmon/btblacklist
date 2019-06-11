@@ -68,8 +68,8 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		c.logger.Warningf("[Updater] can't load previous state from disk: %v", err)
 		err = nil
 	} else {
+		// Get sub caches
 		c.ripeState = tmp.Ripe
-		c.compressedData = tmp.Compressed
 		for name, lines := range tmp.External {
 			for search := range conf.Blocklists {
 				if name == search {
@@ -78,6 +78,8 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 				}
 			}
 		}
+		// Recompute global cache from sub cache
+		c.compressedData = c.compileFinalDataBlobFromCache()
 		c.logger.Infof("[Updater] previous state loaded from '%s'", cacheFile)
 	}
 	// Start the workers
@@ -122,9 +124,8 @@ func (c *Controller) stopWatcher() {
 	// Save some states
 	c.logger.Infof("[Updater] Dumping cache to %s", cacheFile)
 	if err := saveCacheToDisk(cache{
-		Compressed: c.compressedData,
-		Ripe:       c.ripeState,
-		External:   c.externalStates,
+		Ripe:     c.ripeState,
+		External: c.externalStates,
 	}, c.logger.IsDebugShown()); err != nil {
 		c.logger.Errorf("[Updater] can't save state to disk: %v", err)
 	}

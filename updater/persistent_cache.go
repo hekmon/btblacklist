@@ -12,9 +12,8 @@ const (
 )
 
 type cache struct {
-	Compressed []byte              `json:"compressed"`
-	Ripe       []string            `json:"ripe"`
-	External   map[string][]string `json:"external"`
+	Ripe     []string            `json:"ripe"`
+	External map[string][]string `json:"external"`
 }
 
 func loadCacheFromDisk(data interface{}) (err error) {
