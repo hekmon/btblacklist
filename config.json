@@ -9,7 +9,6 @@
 		"hadopi"
     ],
     "external_blocklists": {
-        "bluetack_lvl1": "http://list.iblocklist.com/?list=ydxerpxkpcfqjaybcssw&fileformat=p2p&archiveformat=gz",
-        "bluetack_lvl2": "http://list.iblocklist.com/?list=gyisgnzbhppbvsphucsw&fileformat=p2p&archiveformat=gz"
+        "bluetack_lvl1": "http://list.iblocklist.com/?list=ydxerpxkpcfqjaybcssw&fileformat=p2p&archiveformat=gz"
     }
 }
