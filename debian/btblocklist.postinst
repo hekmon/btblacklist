@@ -7,6 +7,9 @@ case "$1" in
 				adduser --system --disabled-password --disabled-login --home /var/empty --no-create-home --quiet --force-badname --group "btblocklist"
 				chmod 640 /etc/btblocklist/config.json
 				chown root:btblocklist /etc/btblocklist/config.json
+				mkdir -p /var/lib/btblocklist
+				chown btblocklist: /var/lib/btblocklist
+				chmod 750 /var/lib/btblocklist
 				;;
 esac
 
