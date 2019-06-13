@@ -11,6 +11,10 @@ import (
 	"github.com/hekmon/cunits"
 )
 
+const (
+	timeFormat = "2 Jan 2006 15:04:05 MST"
+)
+
 func (c *Controller) updater() {
 	ticker := time.NewTicker(c.frequency)
 	// Fist batch
@@ -114,8 +118,8 @@ func (c *Controller) compileFinalDataBlobFromCache() (data []byte) {
 }
 
 func (c *Controller) updateStatus(nbRIPEranges, nbLists, nbLines int, lstModif, lstBatch time.Time) {
-	if err := c.statusUpdate(fmt.Sprintf("RIPE: %d range(s) | External: %d list(s) with a total of %d line(s) | Last modification: %v | Last update: %v",
-		nbRIPEranges, nbLists, nbLines, lstModif, lstBatch)); err != nil {
+	if err := c.statusUpdate(fmt.Sprintf("RIPE: %d range(s) | External: %d list(s) with a total of %d line(s) | Last modification: %s | Last update: %s",
+		nbRIPEranges, nbLists, nbLines, lstModif.Format(timeFormat), lstBatch.Format(timeFormat))); err != nil {
 		c.logger.Errorf("[Updater] can't update status msg: %v", err)
 	}
 }
