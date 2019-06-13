@@ -26,6 +26,7 @@ type Config struct {
 	RipeSearch      []string
 	Blocklists      map[string]*url.URL
 	Logger          *hllogger.HlLogger
+	StatusUpdate    func(string) error
 }
 
 // New returns an initialized and ready to use Controller.
@@ -51,9 +52,10 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 		// Blocklists
 		externalStates: make(map[string][]string, len(conf.Blocklists)),
 		// Sub controllers
-		ripec:  ripe.New(timeout),
-		http:   cleanhttp.DefaultPooledClient(),
-		logger: conf.Logger,
+		ripec:        ripe.New(timeout),
+		http:         cleanhttp.DefaultPooledClient(),
+		logger:       conf.Logger,
+		statusUpdate: conf.StatusUpdate,
 		// State
 		ctx:     ctx,
 		stopped: make(chan struct{}),
@@ -79,6 +81,8 @@ func New(ctx context.Context, conf Config) (c *Controller, err error) {
 				}
 			}
 		}
+		c.lastBatch = tmp.LastBatch
+		c.lastUpdate = tmp.LastUpdate
 		// Recompute global cache from sub cache
 		c.compressedData = c.compileFinalDataBlobFromCache()
 	}
@@ -103,13 +107,16 @@ type Controller struct {
 	// Global state
 	compressedData       []byte
 	compressedDataAccess sync.RWMutex
+	lastBatch            time.Time
+	lastUpdate           time.Time
 	// Sub states
 	ripeState      []string
 	externalStates map[string][]string
 	// Sub controllers
-	ripec  *ripe.Client
-	http   *http.Client
-	logger *hllogger.HlLogger
+	ripec        *ripe.Client
+	http         *http.Client
+	logger       *hllogger.HlLogger
+	statusUpdate func(string) error
 	// State
 	ctx     context.Context
 	workers sync.WaitGroup
@@ -124,8 +131,10 @@ func (c *Controller) stopWatcher() {
 	// Save some states
 	c.logger.Infof("[Updater] Dumping cache to '%s'", cacheFile)
 	if err := saveCacheToDisk(cache{
-		Ripe:     c.ripeState,
-		External: c.externalStates,
+		Ripe:       c.ripeState,
+		External:   c.externalStates,
+		LastBatch:  c.lastBatch,
+		LastUpdate: c.lastUpdate,
 	}, c.logger.IsDebugShown()); err != nil {
 		c.logger.Errorf("[Updater] can't save state to disk: %v", err)
 	}

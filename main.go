@@ -70,6 +70,7 @@ func main() {
 		RipeSearch:      conf.RipeSearch,
 		Blocklists:      conf.Blocklists,
 		Logger:          logger,
+		StatusUpdate:    systemd.NotifyStatus,
 	})
 	if err != nil {
 		logger.Fatalf(2, "[Main] can't init the updater: %v", err)

@@ -3,6 +3,7 @@ package updater
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"strings"
 	"time"
@@ -29,6 +30,15 @@ func (c *Controller) updater() {
 
 func (c *Controller) updaterBatch() {
 	c.logger.Debug("[Updater] worker: starting a new batch")
+	batchStart := time.Now()
+	defer func() {
+		c.lastBatch = batchStart
+		var externalLines int
+		for _, lines := range c.externalStates {
+			externalLines += len(lines)
+		}
+		c.updateStatus(len(c.ripeState), len(c.externalStates), externalLines, c.lastUpdate, c.lastBatch)
+	}()
 	// Probing
 	ripeUpdate := c.updateRipe()
 	var externalUpdate bool
@@ -50,6 +60,7 @@ func (c *Controller) updaterBatch() {
 	c.compressedDataAccess.Lock()
 	c.compressedData = data
 	c.compressedDataAccess.Unlock()
+	c.lastUpdate = batchStart
 	c.logger.Debug("[Updater] global cache updated")
 }
 
@@ -100,4 +111,11 @@ func (c *Controller) compileFinalDataBlobFromCache() (data []byte) {
 	c.logger.Infof("[Updater] %d range(s) from RIPE search and %d line(s) from %d external blocklist(s) compressed to %s in %v",
 		len(c.ripeState), externalLines, len(c.externalStates), cunits.ImportInByte(float64(len(data))), time.Since(startCompress))
 	return
+}
+
+func (c *Controller) updateStatus(nbRIPEranges, nbLists, nbLines int, lstModif, lstBatch time.Time) {
+	if err := c.statusUpdate(fmt.Sprintf("RIPE: %d range(s) | External: %d list(s) with a total of %d line(s) | Last modification: %v | Last update: %v",
+		nbRIPEranges, nbLists, nbLines, lstModif, lstBatch)); err != nil {
+		c.logger.Errorf("[Updater] can't update status msg: %v", err)
+	}
 }

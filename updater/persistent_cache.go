@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
+	"time"
 )
 
 const (
@@ -12,8 +13,10 @@ const (
 )
 
 type cache struct {
-	Ripe     []string            `json:"ripe"`
-	External map[string][]string `json:"external"`
+	Ripe       []string
+	External   map[string][]string
+	LastBatch  time.Time
+	LastUpdate time.Time
 }
 
 func loadCacheFromDisk(data interface{}) (err error) {
