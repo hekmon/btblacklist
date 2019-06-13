@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+systemctl stop btblocklist.service
+
+#DEBHELPER#
+
+exit 0

@@ -4,12 +4,12 @@ set -e
 
 case "$1" in
 		purge)
-				# rm /etc/btblocklist/config.json
-                rmdir --ignore-fail-on-non-empty /etc/btblocklist
+				test -f /etc/btblocklist/config.json && rm /etc/btblocklist/config.json
+                test -d /etc/btblocklist && rmdir --ignore-fail-on-non-empty /etc/btblocklist
 				test -f /var/lib/btblocklist/cache.gob.gz && rm /var/lib/btblocklist/cache.gob.gz
-                rmdir --ignore-fail-on-non-empty /var/lib/btblocklist
-                userdel "btblocklist"
-                # groupdel "btblocklist"
+                test -d /var/lib/btblocklist && rmdir --ignore-fail-on-non-empty /var/lib/btblocklist
+                grep -q "btblocklist" /etc/passwd && userdel "btblocklist"
+                grep -q "btblocklist" /etc/group && groupdel "btblocklist"
 				;;
 esac
 
