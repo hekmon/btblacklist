@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hekmon/cunits"
+	"github.com/hekmon/cunits/v2"
 )
 
 const (
